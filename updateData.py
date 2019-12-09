@@ -19,17 +19,7 @@ def main(args):
     try:
         URL = "https://fantasy.espn.com/basketball/league/standings?leagueId=28621056"
         driver.get(URL)
-        time.sleep(4)
-        iframe = driver.find_element_by_css_selector("div#disneyid-wrapper iframe")
-        driver.switch_to.frame(iframe)
-        emailBox,passBox = driver.find_elements_by_tag_name("input")
-        email = "keetwosuccess@gmail.com"
-        emailBox.send_keys(email)
-        passBox.send_keys(password)#args[1])
-        driver.find_element_by_css_selector("button[type=submit]").click()
-        time.sleep(1)
-        driver.refresh()
-        time.sleep(5)
+        login(driver, "keetwosuccess@gmail.com",password)
         statsdiv = driver.find_element_by_class_name("season--stats--table")
         subTables = statsdiv.find_elements_by_class_name("Table2__table")
         tbodies = [s.find_element_by_tag_name("tbody") for s in subTables]
@@ -44,14 +34,27 @@ def main(args):
             pathlib.Path("output").mkdir()
         with open("output/updated_stats.csv","w", newline="") as out:
             writer = csv.writer(out)
-            writer.writerow(["Name","Tres","Boards","Oops","Cookies","Dikembes","JR's","Points","Rank"])
+            writer.writerow(["Name","Threes","Rebounds","Assists","Steals","Blocks","Turnovers","Points","Rank"])
             for t in teams:
-                writer.writerow([t.coach,t.threes,t.rebounds,t.assists,t.steals,t.blocks,t.turnovers,t.points,t.rank])
+                writer.writerow([t.coach,t.threes,t.rebounds,t.assists,t.steals,t.blocks,-t.turnovers,t.points,t.rank])
         print("Stats Updated!")
         driver.close()   
     except Exception as e:
         print(e)
         driver.close()
+
+def login(driver, email, password):
+    """Logs into the ESPN fantasy website given an email and password"""
+    time.sleep(4)
+    iframe = driver.find_element_by_css_selector("div#disneyid-wrapper iframe")
+    driver.switch_to.frame(iframe)
+    emailBox,passBox = driver.find_elements_by_tag_name("input")
+    emailBox.send_keys(email)
+    passBox.send_keys(password)
+    driver.find_element_by_css_selector("button[type=submit]").click()
+    time.sleep(1)
+    driver.refresh()
+    time.sleep(8)
      
 if __name__ == "__main__":
     import sys

@@ -30,7 +30,12 @@ def get_list(url, paths):
 def list_representation(l):
     """Returns a string representation of a list, without oxford comma.
     [a,b,c,d] => 'a, b, c and d' """
-    return f"{', '.join(l[0:-1])} and {l[-1]}" if len(l) - 1 else l[0]
+    if not len(l):
+        return l
+    elif len(l) == 1:
+        return l[0]
+    else:
+        return f"{', '.join(l[0:-1])} and {l[-1]}"   
 
 def rmChar(s, char):
     """Removes instances of char from s"""
