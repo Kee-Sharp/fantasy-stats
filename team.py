@@ -26,7 +26,7 @@ class Player:
         self.Assists = float(arr[8])
         self.Steals = float(arr[9])
         self.Blocks = float(arr[10])
-        self.Turnovers = float(arr[11])
+        self.Turnovers = -float(arr[11])
         self.Points = float(arr[12])
         self.games = arr[16]
     def __str__(self):
