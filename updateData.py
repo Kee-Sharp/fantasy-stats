@@ -5,21 +5,29 @@ import team
 import utils
 import time
 import pathlib
+import json
 
 def main(args):
-    if len(args) > 1 and "." in args[1]:
-        with open (args[1], "r") as f:
-            password = f.readline()
-    elif len(args) > 1:
-        password = args[1]
-    else:
-        print("Enter in either password or one-line file containing password as second argument")
-        return
+    # if len(args) > 1 and "." in args[1]:
+    #     with open (args[1], "r") as f:
+    #         password = f.readline()
+    # elif len(args) > 1:
+    #     password = args[1]
+    # else:
+    #     print("Enter in either password or one-line file containing password as second argument")
+    #     return
+    if len(args) == 1 and pathlib.os.path.exists("settings.json"):
+        with open("settings.json", "r") as f:
+            settings = json.loads(f.read())
+    elif len(args) >= 1:
+        print("Settings.json file is missing. Create JSON object with email and password fields for logging into ESPN")
+        return 
+
     driver = webdriver.Chrome()
     try:
         URL = "https://fantasy.espn.com/basketball/league/standings?leagueId=28621056"
         driver.get(URL)
-        login(driver, "keetwosuccess@gmail.com",password)
+        login(driver,settings["email"],settings["password"])
         statsdiv = driver.find_element_by_class_name("season--stats--table")
         subTables = statsdiv.find_elements_by_class_name("Table2__table")
         tbodies = [s.find_element_by_tag_name("tbody") for s in subTables]
