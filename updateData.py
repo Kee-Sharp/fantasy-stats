@@ -6,16 +6,10 @@ import utils
 import time
 import pathlib
 import json
+import datetime as dt
+import os
 
 def main(args):
-    # if len(args) > 1 and "." in args[1]:
-    #     with open (args[1], "r") as f:
-    #         password = f.readline()
-    # elif len(args) > 1:
-    #     password = args[1]
-    # else:
-    #     print("Enter in either password or one-line file containing password as second argument")
-    #     return
     if len(args) == 1 and pathlib.os.path.exists("settings.json"):
         with open("settings.json", "r") as f:
             settings = json.loads(f.read())
@@ -36,15 +30,34 @@ def main(args):
         for i in range(14):
             rows.append(group3rows[0][i].find_elements_by_tag_name("td")+group3rows[1][i].find_elements_by_tag_name("td")+group3rows[2][i].find_elements_by_tag_name("td"))
         data = [[utils.rmChar(d.text,"\n") for d in arr] for arr in rows]
-        print(data)        
-        teams = [team.Team(arr) for arr in data]
-        if not pathlib.os.path.exists("output"):
-            pathlib.Path("output").mkdir()
-        with open("output/updated_stats.csv","w", newline="") as out:
+        teams = [team.Team(arr[1:]) for arr in data]
+        if not pathlib.os.path.exists("data"):
+            pathlib.Path("data").mkdir()
+        today = dt.date.today()
+        with open(f"data/{today.strftime('%m-%d-%y')}.csv","w", newline="") as out:
             writer = csv.writer(out)
-            writer.writerow(["Name","Threes","Rebounds","Assists","Steals","Blocks","Turnovers","Points","Rank"])
+            writer.writerow(["Name","Threes","Rebounds","Assists","Steals","Blocks","Turnovers","Points"])
             for t in teams:
-                writer.writerow([t.coach,t.threes,t.rebounds,t.assists,t.steals,t.blocks,-t.turnovers,t.points,t.rank])
+                writer.writerow([t.name,*t.stats()])
+        dataFiles = [(n,toDate(n)) for n in os.listdir("data")]
+        twoWeeksAgo = today - dt.timedelta(days=14)
+        closestDataFile = sorted(dataFiles, key=lambda f: abs((f[1] - twoWeeksAgo)).days)[0][0]
+        print(closestDataFile)
+        with open(f"data/{closestDataFile}", "r") as oldF:
+            reader = csv.reader(oldF)
+            oldTeams = [team.Team(r, arrMode=1) for i,r in enumerate(reader) if i > 0]
+        print("OldTeams: ",oldTeams)
+        dOldTeams = {t.name: t.stats() for t in oldTeams}
+        print(dOldTeams)
+        dNewTeams = {t.name: t.stats() for t in teams}
+        print(dNewTeams)
+        modifiedTeams = {name: [dNewTeams[name][i] - dOldTeams[name][i] for i in range(7)] for name in dNewTeams}
+        print(modifiedTeams)
+        with open("lastTwoWeeks.csv", "w", newline="") as out2:
+            writer = csv.writer(out2)
+            writer.writerow(["Name","Threes","Rebounds","Assists","Steals","Blocks","Turnovers","Points"])
+            for t in modifiedTeams:
+                writer.writerow([t, *modifiedTeams[t]])
         print("Stats Updated!")
         driver.close()   
     except Exception as e:
@@ -63,6 +76,10 @@ def login(driver, email, password):
     time.sleep(1)
     driver.refresh()
     time.sleep(8)
+def toDate(filename):
+    s = filename.split(".csv")[0]
+    nums = s.split("-")
+    return dt.date(2000+int(nums[2]),int(nums[0]),int(nums[1]))
      
 if __name__ == "__main__":
     import sys

@@ -10,4 +10,4 @@ settings.json
 .vscode/
 
 # stats folder
-output/
+data/
