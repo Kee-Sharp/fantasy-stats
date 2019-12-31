@@ -13,7 +13,7 @@ def main(args):
     if len(args) == 1 and pathlib.os.path.exists("settings.json"):
         with open("settings.json", "r") as f:
             settings = json.loads(f.read())
-    elif len(args) >= 1:
+    else:
         print("Settings.json file is missing. Create JSON object with email and password fields for logging into ESPN")
         return 
 
@@ -31,6 +31,7 @@ def main(args):
             rows.append(group3rows[0][i].find_elements_by_tag_name("td")+group3rows[1][i].find_elements_by_tag_name("td")+group3rows[2][i].find_elements_by_tag_name("td"))
         data = [[utils.rmChar(d.text,"\n") for d in arr] for arr in rows]
         teams = [team.Team(arr[1:]) for arr in data]
+        driver.close()   
         if not pathlib.os.path.exists("data"):
             pathlib.Path("data").mkdir()
         today = dt.date.today()
@@ -42,24 +43,19 @@ def main(args):
         dataFiles = [(n,toDate(n)) for n in os.listdir("data")]
         twoWeeksAgo = today - dt.timedelta(days=14)
         closestDataFile = sorted(dataFiles, key=lambda f: abs((f[1] - twoWeeksAgo)).days)[0][0]
-        print(closestDataFile)
+        print("Using:", closestDataFile)
         with open(f"data/{closestDataFile}", "r") as oldF:
             reader = csv.reader(oldF)
             oldTeams = [team.Team(r, arrMode=1) for i,r in enumerate(reader) if i > 0]
-        print("OldTeams: ",oldTeams)
         dOldTeams = {t.name: t.stats() for t in oldTeams}
-        print(dOldTeams)
         dNewTeams = {t.name: t.stats() for t in teams}
-        print(dNewTeams)
         modifiedTeams = {name: [dNewTeams[name][i] - dOldTeams[name][i] for i in range(7)] for name in dNewTeams}
-        print(modifiedTeams)
         with open("lastTwoWeeks.csv", "w", newline="") as out2:
             writer = csv.writer(out2)
             writer.writerow(["Name","Threes","Rebounds","Assists","Steals","Blocks","Turnovers","Points"])
             for t in modifiedTeams:
                 writer.writerow([t, *modifiedTeams[t]])
         print("Stats Updated!")
-        driver.close()   
     except Exception as e:
         print(e)
         driver.close()

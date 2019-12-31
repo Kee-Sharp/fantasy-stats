@@ -23,18 +23,26 @@ class Team:
         return [self.threes,self.rebounds,self.assists,self.steals,self.blocks,self.turnovers,self.points]
 
 class Player:
-    def __init__(self, arr):
+    def __init__(self, arr, teamOwner):
         self.Name = arr[1]
-        self.Threes = float(arr[6])
-        self.Rebounds = float(arr[7])
-        self.Assists = float(arr[8])
-        self.Steals = float(arr[9])
-        self.Blocks = float(arr[10])
-        self.Turnovers = -float(arr[11])
-        self.Points = float(arr[12])
-        self.games = arr[16]
+        threesIndex = 6 if teamOwner else 5
+        self.Threes = f(arr[threesIndex])
+        self.Rebounds = f(arr[threesIndex+1])
+        self.Assists = f(arr[threesIndex+2])
+        self.Steals = f(arr[threesIndex+3])
+        self.Blocks = f(arr[threesIndex+4])
+        self.Turnovers = -f(arr[threesIndex+5])
+        self.Points = f(arr[threesIndex+6])
+        self.games = arr[threesIndex+10]
     def __str__(self):
         return self.Name
     def __repr__(self):
         return f"{self.Name} ({self.games} games)"
+
+def f(s):
+    try:
+        ret = float(s)
+        return ret
+    except Exception:
+        return 0
     
