@@ -1,4 +1,3 @@
-"""Type in password as argument to script"""
 from selenium import webdriver
 import csv
 import team
@@ -8,8 +7,10 @@ import pathlib
 import json
 import datetime as dt
 import os
+from selenium.webdriver.support.ui import WebDriverWait
 
 def main(args):
+    start = time.perf_counter()
     if len(args) == 1 and pathlib.os.path.exists("settings.json"):
         with open("settings.json", "r") as f:
             settings = json.loads(f.read())
@@ -21,8 +22,7 @@ def main(args):
     try:
         URL = "https://fantasy.espn.com/basketball/league/standings?leagueId=28621056"
         driver.get(URL)
-        login(driver,settings["email"],settings["password"])
-        statsdiv = driver.find_element_by_class_name("season--stats--table")
+        statsdiv = WebDriverWait(driver, timeout=10).until(lambda d: d.find_element_by_class_name("season--stats--table"))
         subTables = statsdiv.find_elements_by_class_name("Table2__table")
         tbodies = [s.find_element_by_tag_name("tbody") for s in subTables]
         group3rows = [b.find_elements_by_tag_name("tr") for b in tbodies]
@@ -56,22 +56,12 @@ def main(args):
             for t in modifiedTeams:
                 writer.writerow([t, *modifiedTeams[t]])
         print("Stats Updated!")
+        finish = time.perf_counter()
+        print(f"Finished in {finish-start} second(s)")
     except Exception as e:
         print(e)
         driver.close()
 
-def login(driver, email, password):
-    """Logs into the ESPN fantasy website given an email and password"""
-    time.sleep(4)
-    iframe = driver.find_element_by_css_selector("div#disneyid-wrapper iframe")
-    driver.switch_to.frame(iframe)
-    emailBox,passBox = driver.find_elements_by_tag_name("input")
-    emailBox.send_keys(email)
-    passBox.send_keys(password)
-    driver.find_element_by_css_selector("button[type=submit]").click()
-    time.sleep(1)
-    driver.refresh()
-    time.sleep(8)
 def toDate(filename):
     s = filename.split(".csv")[0]
     nums = s.split("-")

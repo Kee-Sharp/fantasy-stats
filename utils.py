@@ -44,3 +44,34 @@ def rmChar(s, char):
 def rmKeys(d,keys):
     """Removes each key in keys from dict d"""
     return {k:int(d[k]) for k in d if k not in keys}
+def setParams(URL, params):
+    """Adds each parameter in params to the URL"""
+    if "?" in URL:
+        base,ps = URL.split("?")
+        ps = ps.split("&")
+        toBeAdded = dict([p.split("=") for p in ps])
+        for k in params:
+            toBeAdded[k] = params[k]
+        base += "?"
+        for k in toBeAdded:
+            base += f"{k}={toBeAdded[k]}&"
+    else:
+        base += "?"
+        for k in params:
+            base += f"{k}={params[k]}&"
+    base = base[:-1]
+    return base
+def login(driver, email, password):
+    """Logs into the ESPN fantasy website given an email and password"""
+    try:
+        iframe = WebDriverWait(driver, timeout=6).until(lambda d: d.find_element_by_css_selector("div#disneyid-wrapper iframe"))
+        driver.switch_to.frame(iframe)
+        emailBox,passBox = WebDriverWait(driver, timeout=10).until(lambda d: d.find_elements_by_tag_name("input"))
+    except Exception:
+        return
+    else:
+        emailBox.send_keys(email)
+        passBox.send_keys(password)
+        driver.find_element_by_css_selector("button[type=submit]").click()
+        driver.refresh()
+        
