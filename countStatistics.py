@@ -6,6 +6,7 @@ import traceback
 import json
 import datetime as dt
 import pandas as pd
+import os
 from utils import setParams
 
 def getStatistic(driver, URL, current, seen, missed):
@@ -39,6 +40,16 @@ def getStatistic(driver, URL, current, seen, missed):
 def main(args):
     start = time.perf_counter()
     countMissed = len(args) == 2 and args[1] == "missed"
+    stat = "missed" if countMissed else "total"
+    #Gather calculation from previous weeks
+    if f"{stat}Games.xlsx" in os.listdir():
+        df = pd.read_excel(f"{stat}Games.xlsx", index_col=0)
+        statsByWeek = df.to_dict()
+        del statsByWeek["Total"]
+        start = max([int(s.split("Week")[1]) for s in df.columns if s != "Total"]) - 1 # recalculate last week in case that weeks games were not finished
+    else:
+        statsByWeek = {}
+        start = 0
     with open("teamIds.json", "r") as f:
         teamIds = json.loads(f.read())
     URL = "https://fantasy.espn.com/basketball/boxscore?leagueId=28621056&seasonId=2020"
@@ -48,12 +59,12 @@ def main(args):
     driver = webdriver.Chrome(options=chromeOptions)
     totalDays = (dt.date.today() - dt.date(2019,10,21)).days
     totalWeeks = int(totalDays/7)
-    statsByWeek = {}
-    for i in range(totalWeeks): 
+    print(start, totalWeeks+1)
+    for i in range(start, totalWeeks+1): 
         currentWeek = {name: 0 for name in teamIds}
         for j in range(7):
             scoringId = i*7 + j
-            if scoringId:
+            if scoringId and scoringId < totalDays:
                 seen = {name: False for name in teamIds}
                 for name, teamId in teamIds.items():
                     if not seen[name]:
@@ -65,8 +76,9 @@ def main(args):
     df = df.reindex(teamIds.keys())
     df["Total"] = df.apply(lambda row: sum(row.values), axis=1)
     print(df.sort_values("Total"))
-    with pd.ExcelWriter(f"{"missed" if countMissed else "total"}Games.xlsx") as writer:
-        df.to_excel(writer)
+    with pd.ExcelWriter(f"{'missed' if countMissed else 'total'}Games.xlsx") as writer:
+        df.to_excel(writer, sheet_name="Team Order")
+        df.sort_values("Total").to_excel(writer, sheet_name="Team Order")
     finish = time.perf_counter()
     print(f"Finished in {finish-start} second(s)")
 if __name__ == "__main__":

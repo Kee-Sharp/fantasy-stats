@@ -30,15 +30,16 @@ def advice2(name1,name2):
     catsLosing = []
     for cat in team1:
         t = [t1,t2] = [team1[cat],team2[cat]]
+        minT, maxT = (min(t),max(t)) if t1 > 0 else (max(t),min(t))
         if t1 < t2:
             largePercentage = True
-            if float(max(t))/min(t) < 1.1:
+            if abs(float(maxT)/minT) < 1.1:
                 largePercentage = False
             catsLosing.append((cat,largePercentage))
     catsLosing = dict(catsLosing)
     losing = list_representation(list(catsLosing))
     close = list_representation([cat for cat in catsLosing if not catsLosing[cat]])
-    advice = f"Losing {losing} {'none of which are close' if not any(catsLosing.values()) else 'but can win '+close}"
+    advice = f"Losing {losing} {'none of which are close' if all(catsLosing.values()) else 'but can win '+close}"
     print(advice)
 
 if __name__ == "__main__":
