@@ -11,3 +11,6 @@ settings.json
 
 # stats folder
 data/
+
+#generated statistics
+*.xlsx

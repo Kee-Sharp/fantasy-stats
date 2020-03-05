@@ -74,4 +74,7 @@ def login(driver, email, password):
         passBox.send_keys(password)
         driver.find_element_by_css_selector("button[type=submit]").click()
         driver.refresh()
+def numToPos(i):
+    """Returns i as a string representation"""
+    return ["0th", "1st", "2nd", "3rd", *[f"{i}th" for i in range(4,15)]][i]
         
