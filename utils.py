@@ -42,8 +42,19 @@ def rmChar(s, char):
     return "".join(s.split(char))
 
 def rmKeys(d,keys):
-    """Removes each key in keys from dict d"""
+    """Removes each key in keys from dict d, convert value to int"""
     return {k:int(d[k]) for k in d if k not in keys}
+def rmKeysF(d,keys):
+    """Removes each key in keys from dict d, convert value to float"""
+    newD = {}
+    for k,v in d.items():
+        if k not in keys: 
+            try:
+                newV = int(v)
+            except:
+                newV = float(v)
+            newD[k] = newV
+    return newD
 def setParams(URL, params):
     """Adds each parameter in params to the URL"""
     if "?" in URL:
@@ -61,19 +72,6 @@ def setParams(URL, params):
             base += f"{k}={params[k]}&"
     base = base[:-1]
     return base
-def login(driver, email, password):
-    """Logs into the ESPN fantasy website given an email and password"""
-    try:
-        iframe = WebDriverWait(driver, timeout=6).until(lambda d: d.find_element_by_css_selector("div#disneyid-wrapper iframe"))
-        driver.switch_to.frame(iframe)
-        emailBox,passBox = WebDriverWait(driver, timeout=10).until(lambda d: d.find_elements_by_tag_name("input"))
-    except Exception:
-        return
-    else:
-        emailBox.send_keys(email)
-        passBox.send_keys(password)
-        driver.find_element_by_css_selector("button[type=submit]").click()
-        driver.refresh()
 def numToPos(i):
     """Returns i as a string representation"""
     return ["0th", "1st", "2nd", "3rd", *[f"{i}th" for i in range(4,15)]][i]

@@ -1,5 +1,5 @@
 import csv
-from utils import rmKeys,list_representation
+from utils import rmKeysF,list_representation
 
 def main(args):
     """Shows both types of category advice for the matchup"""
@@ -10,22 +10,23 @@ def main(args):
     advice2(name1,name2)
 
 def advice1(name1,name2):
-    """Gives the four categories with the best chance of winning"""
-    with open("lastTwoWeeks.csv", "r",encoding="utf-8-sig") as f:
+    """Gives the five categories with the best chance of winning"""
+    with open("lastTwoWeeks.csv", "r", encoding="utf-8-sig") as f:
         csvin = csv.DictReader(f)
         teamLines = [dict(entry) for entry in csvin]
-    teams = {t["Name"].lower():rmKeys(t,["Name","Rank"]) for t in teamLines}
+    teams = {t["Name"].lower():rmKeysF(t,["Name","Rank"]) for t in teamLines}
     team1,team2 = teams[name1],teams[name2]
+    #the 'winningness' of each category is measured by difference divided by the average
     rankedCats = sorted(team1.keys(), key=lambda cat: 2*(team1[cat]-team2[cat])/abs(team1[cat]+team2[cat]), reverse=True)
-    return rankedCats[0:4]
+    return rankedCats[:5]
 
 def advice2(name1,name2):
     """Shows which categories name1 is losing in, also notifies if they are close"""
-    with open("lastTwoWeeks.csv", "r",encoding="utf-8-sig") as f:
+    with open("lastTwoWeeks.csv", "r", encoding="utf-8-sig") as f:
         csvin = csv.DictReader(f)
         teamLines = [dict(entry) for entry in csvin]
     translation = {"Tres":"threes","Boards":"rebounds","Oops":"assists","Cookies":"steals","Dikembes":"blocks","JR's":"turnovers","Points":"points"}
-    teams = {t["Name"].lower():rmKeys(t,["Name","Rank"]) for t in teamLines}
+    teams = {t["Name"].lower():rmKeysF(t,["Name","Rank"]) for t in teamLines}
     team1,team2 = teams[name1],teams[name2]
     catsLosing = []
     for cat in team1:

@@ -14,3 +14,10 @@ data/
 
 #generated statistics
 *.xlsx
+*.csv
+
+#runtime documents
+*.txt
+
+#debug file
+debug.log
